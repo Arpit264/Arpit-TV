@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARPIT TV LIVE</title>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+ background:#080808;
+ color:white;
+ font-family:Arial,sans-serif;
+}
+
+header{
+ background:#151515;
+ padding:17px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ border-bottom:1px solid #333;
+}
+
+.logo{
+ font-size:26px;
+ font-weight:bold;
+ letter-spacing:1px;
+}
+
+.logo span{color:#ed2525}
+
+.live{
+ color:#ff3030;
+ font-size:13px;
+ font-weight:bold;
+}
+
+.container{
+ max-width:1000px;
+ margin:auto;
+ padding:12px;
+}
+
+.player{
+ background:#000;
+ border:1px solid #333;
+ border-radius:9px;
+ overflow:hidden;
+}
+
+video{
+ width:100%;
+ aspect-ratio:16/9;
+ display:block;
+ background:#000;
+}
+
+.info{
+ padding:15px;
+ background:#171717;
+}
+
+.status{
+ font-size:13px;
+ color:#ff3434;
+ margin-top:9px;
+}
+
+.controls{
+ display:flex;
+ gap:9px;
+ flex-wrap:wrap;
+ padding:15px;
+ background:#171717;
+ margin-top:12px;
+ border-radius:8px;
+}
+
+button{
+ background:#e52626;
+ color:white;
+ border:none;
+ padding:12px 17px;
+ border-radius:5px;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+.secondary{background:#333}
+
+select{
+ background:#222;
+ color:white;
+ padding:10px;
+ border:1px solid #444;
+ border-radius:5px;
+}
+
+footer{
+ text-align:center;
+ color:#777;
+ padding:25px 10px;
+ font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">ARPIT <span>TV</span></div>
+ <div class="live">● LIVE</div>
+</header>
+
+<div class="container">
+
+ <div class="player">
+
+  <video id="video" controls playsinline autoplay></video>
+
+  <div class="info">
+   <h3>🏏 ARPIT TV - LIVE STREAMING</h3>
+   <div class="status" id="status">● CONNECTING...</div>
+  </div>
+
+ </div>
+
+ <div class="controls">
+
+  <button onclick="playVideo()">▶ PLAY</button>
+
+  <button class="secondary" onclick="pauseVideo()">Ⅱ PAUSE</button>
+
+  <button class="secondary" onclick="fullScreen()">⛶ FULLSCREEN</button>
+
+  <select id="quality" onchange="changeQuality()">
+   <option value="-1">Auto Quality</option>
+  </select>
+
+ </div>
+
+</div>
+
+<footer>
+ © 2026 ARPIT TV
+ <br><br>
+ LIVE STREAMING PLAYER
+</footer>
+
+<script>
+
+const STREAM_URL =
+"https://dai.google.com/ssai/event/OBZ7-96EQEmo49yN4mTxqg/master.m3u8";
+
+const video = document.getElementById("video");
+const statusText = document.getElementById("status");
+const quality = document.getElementById("quality");
+
+let hls = null;
+
+function startPlayer(){
+
+ if(Hls.isSupported()){
+
+  hls = new Hls({
+   enableWorker:true,
+   lowLatencyMode:true,
+   maxBufferLength:30
+  });
+
+  hls.loadSource(STREAM_URL);
+  hls.attachMedia(video);
+
+  hls.on(Hls.Events.MANIFEST_PARSED,function(){
+
+   statusText.innerText="● ARPIT TV LIVE";
+
+   hls.levels.forEach(function(level,index){
+
+    let option=document.createElement("option");
+
+    option.value=index;
+
+    option.text=level.height
+      ? level.height+"p"
+      : "Quality "+(index+1);
+
+    quality.appendChild(option);
+
+   });
+
+   playVideo();
+
+  });
+
+  hls.on(Hls.Events.ERROR,function(event,data){
+
+   if(data.fatal){
+
+    statusText.innerText="● STREAM ERROR - CHECK CONNECTION";
+
+   }
+
+  });
+
+ }
+
+ else if(video.canPlayType("application/vnd.apple.mpegurl")){
+
+  video.src=STREAM_URL;
+
+  video.addEventListener("loadedmetadata",function(){
+
+   statusText.innerText="● ARPIT TV LIVE";
+
+   playVideo();
+
+  },{once:true});
+
+ }
+
+ else{
+
+  statusText.innerText="HLS NOT SUPPORTED";
+
+ }
+
+}
+
+function playVideo(){
+
+ video.play().catch(function(){
+
+  statusText.innerText="● PRESS PLAY TO START";
+
+ });
+
+}
+
+function pauseVideo(){
+
+ video.pause();
+
+}
+
+function fullScreen(){
+
+ if(video.requestFullscreen){
+
+  video.requestFullscreen();
+
+ }
+
+ else if(video.webkitEnterFullscreen){
+
+  video.webkitEnterFullscreen();
+
+ }
+
+}
+
+function changeQuality(){
+
+ if(hls){
+
+  hls.currentLevel=parseInt(quality.value);
+
+ }
+
+}
+
+video.addEventListener("playing",function(){
+
+ statusText.innerText="● ARPIT TV - PLAYING LIVE";
+
+});
+
+video.addEventListener("waiting",function(){
+
+ statusText.innerText="● BUFFERING...";
+
+});
+
+video.addEventListener("error",function(){
+
+ statusText.innerText="● VIDEO ERROR";
+
+});
+
+startPlayer();
+
+</script>
+
+</body>
+  </html>
+  
